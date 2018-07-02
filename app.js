@@ -24,9 +24,7 @@ app.get('/search/:location/:searchTerm', (request, response) => {
         .then(body => {
             const results = getResults(body)
             if (checkResponseForListings(results)) {
-                let searchSubject = formatSearchTerm(searchTerm)
-                let mailHTML = formatResultsToHTML(results)
-                mailHandler.sendEmail(searchSubject, mailHTML)
+                mailHandler.sendEmail(formatSearchTerm(searchTerm), formatResultsToHTML(results))
                 db.storeSearch(location, searchTerm, setSearchDate(), 'test@email.net')
                 response.json({
                     message: 'Email successfuly sent!'
@@ -46,7 +44,6 @@ function getResults (body) {
     const $ = cheerio.load(body)
     const rows = $('li.result-row')
     const results = []
-    
     rows.each((index, element) => {
         const result = $(element)
         const link = result.find('.result-title').attr('href')
@@ -55,7 +52,6 @@ function getResults (body) {
         const imageData = result.find('a.result-image').attr('data-ids')
         const timePosted = result.find('.result-date').text()
         const images = getImagesIfTheyExist(imageData)
-        
         results.push({
             title,
             link,
@@ -106,8 +102,7 @@ function getImagesIfTheyExist (imageData) {
         images = parts.map((id) => {
             return `https://images.craigslist.org/${id.split(':')[1]}_300x300.jpg`
         })
-    }
-    return images
+    } return images
 }
 
 function setSearchDate () {
