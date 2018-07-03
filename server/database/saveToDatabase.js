@@ -1,20 +1,19 @@
 const pool = require('./postgresDB')
 
 function createTables () {
-    pool.query('CREATE TABLE IF NOT EXISTS searches(location text, searchTerm text, searchDate date, email text)')
+    return pool.query('CREATE TABLE IF NOT EXISTS searches(location text, searchTerm text, searchDate date, email text)')
 }
 
 
 function storeSearch (location, searchTerm, searchDate, email) {
-    pool.query(`INSERT INTO searches(location, searchTerm, searchDate, email) VALUES ('${location}', '${searchTerm}', '${searchDate}', '${email}');`, (error, response) => {
-            pool.end })
+    return pool.query(`INSERT INTO searches(location, searchTerm, searchDate, email) VALUES ('${location}', '${searchTerm}', '${searchDate}', '${email}');`)
 }
 
 function getSearches () {
-    pool.query(`SELECT email FROM searches ;`, (error, response) => {
-        console.log(response.rows)
-        pool.end
-        return response.rows })
+    return pool.query(`SELECT email FROM searches ;`)
+    .then(response => {    
+        return response.rows
+    })
 }
 
 module.exports = {

@@ -39,6 +39,15 @@ app.get('/search/:location/:searchTerm', (request, response) => {
         })
 })
 
+function getSearchArray () {
+    return db.getSearches()
+}
+
+getSearchArray()
+    .then(data => {
+        console.log(data)
+    })
+
 
 function getResults (body) {
     const $ = cheerio.load(body)
