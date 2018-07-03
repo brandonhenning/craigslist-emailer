@@ -15,28 +15,6 @@ app.use(morgan('tiny'))
 db.createTables()
 
 
-// getEmails()
-//     .then(emails => {
-//         return logEmails(emails)
-//     })
-//     .catch(error => {
-//         console.error(error)
-// })
-
-async function getEmails () {
-    try {
-        return await db.getSearches()
-    } catch (error) {
-        console.log(error, 'not syncing')
-    }
-    console.log(searches)
-}
-
-function logEmails (emailArray) {
-    console.log(emailArray)
-    return emailArray
-}
-
 
 app.get('/search/:location/:searchTerm', (request, response) => {
     (checkRequestForErrors(request))
@@ -62,18 +40,15 @@ app.get('/search/:location/:searchTerm', (request, response) => {
 })
 
 
-// async function logEmails () {
-//     const results = await db.getSearches() 
-//         .catch(error => {
-//         console.error(error)
-//     })
-//     console.log(results)
-// }
-
 function getResults (body) {
     const $ = cheerio.load(body)
     const rows = $('li.result-row')
     const results = []
+    formatResultsRows(results, $, rows)
+    return results
+}
+
+function formatResultsRows (results, $, rows) {
     rows.each((index, element) => {
         const result = $(element)
         const link = result.find('.result-title').attr('href')
@@ -82,15 +57,12 @@ function getResults (body) {
         const imageData = result.find('a.result-image').attr('data-ids')
         const timePosted = result.find('.result-date').text()
         const images = getImagesIfTheyExist(imageData)
-        results.push({
-            title,
-            link,
-            price,
-            images,
-            timePosted
-        })
+        pushResultsAsList(results, title, link, price, images, timePosted)
     })
-    return results
+}
+
+function pushResultsAsList (results, title, link, price, images, timePosted) {
+    results.push({ title, link, price, images,timePosted })
 }
 
 function checkResponseForListings (results) {

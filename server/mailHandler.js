@@ -28,14 +28,6 @@ function sendEmail (mailSubject, mailHTML) {
     })
 }
 
-var transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-           user: 'youremail@address.com',
-           pass: 'yourpassword'
-       }
-   });
-
 
 module.exports = {
     sendEmail,

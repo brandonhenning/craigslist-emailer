@@ -12,6 +12,7 @@ function storeSearch (location, searchTerm, searchDate, email) {
 
 function getSearches () {
     pool.query(`SELECT email FROM searches ;`, (error, response) => {
+        console.log(response.rows)
         pool.end
         return response.rows })
 }
