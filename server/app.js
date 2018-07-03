@@ -1,3 +1,4 @@
+require('dotenv').config()
 const express = require('express')
 const cors = require('cors')
 const morgan = require('morgan')
@@ -13,15 +14,14 @@ app.use(morgan('tiny'))
 
 db.createTables()
 
-// db.getSearches()
 
-getEmails()
-    .then(emails => {
-        return logEmails(emails)
-    })
-    .catch(error => {
-        console.error(error)
-})
+// getEmails()
+//     .then(emails => {
+//         return logEmails(emails)
+//     })
+//     .catch(error => {
+//         console.error(error)
+// })
 
 async function getEmails () {
     try {
@@ -62,13 +62,13 @@ app.get('/search/:location/:searchTerm', (request, response) => {
 })
 
 
-async function logEmails () {
-    const results = await db.getSearches() 
-        .catch(error => {
-        console.error(error)
-    })
-    console.log(results)
-}
+// async function logEmails () {
+//     const results = await db.getSearches() 
+//         .catch(error => {
+//         console.error(error)
+//     })
+//     console.log(results)
+// }
 
 function getResults (body) {
     const $ = cheerio.load(body)

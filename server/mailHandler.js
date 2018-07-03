@@ -4,18 +4,16 @@ const nodemailer = require('nodemailer')
 function sendEmail (mailSubject, mailHTML) {
     nodemailer.createTestAccount((error, account) => {
         let transporter = nodemailer.createTransport({
-            host: 'smtp.ethereal.email',
-            port: 587,
-            secure: false,
+            service: 'gmail',
             auth: {
-                user: account.user,
-                pass: account.pass
+                user: 'craigslist.bot.bph@gmail.com',
+                pass: process.env.EMAIL_PASS
             }
         })
     
-        var mailOptions = {
-            from: '<brandon@example.com>',
-            to: 'test@gmail.com',
+        let mailOptions = {
+            from: '<craigslistbot>',
+            to: 'prescottbph@gmail.com',
             subject: mailSubject,
             html: mailHTML
         }
@@ -29,6 +27,14 @@ function sendEmail (mailSubject, mailHTML) {
         })
     })
 }
+
+var transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+           user: 'youremail@address.com',
+           pass: 'yourpassword'
+       }
+   });
 
 
 module.exports = {
