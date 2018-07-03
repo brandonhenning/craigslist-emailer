@@ -13,6 +13,30 @@ app.use(morgan('tiny'))
 
 db.createTables()
 
+// db.getSearches()
+
+getEmails()
+    .then(emails => {
+        return logEmails(emails)
+    })
+    .catch(error => {
+        console.error(error)
+})
+
+async function getEmails () {
+    try {
+        return await db.getSearches()
+    } catch (error) {
+        console.log(error, 'not syncing')
+    }
+    console.log(searches)
+}
+
+function logEmails (emailArray) {
+    console.log(emailArray)
+    return emailArray
+}
+
 
 app.get('/search/:location/:searchTerm', (request, response) => {
     (checkRequestForErrors(request))
@@ -38,7 +62,13 @@ app.get('/search/:location/:searchTerm', (request, response) => {
 })
 
 
-
+async function logEmails () {
+    const results = await db.getSearches() 
+        .catch(error => {
+        console.error(error)
+    })
+    console.log(results)
+}
 
 function getResults (body) {
     const $ = cheerio.load(body)
@@ -124,4 +154,3 @@ app.use((error, request, response, next) => {
 })
 
 app.listen(port)
-

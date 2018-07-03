@@ -18,8 +18,19 @@ async function storeSearch (location, searchTerm, searchDate, email) {
     }
 }
 
+async function getSearches () {
+    try {
+        await pool.query(`SELECT email FROM searches ;`, (error, response) => {
+            pool.end 
+        return response.rows })
+    } catch (error) {
+        console.error(error, 'Database error: search not formatted correctly')
+    }
+} 
+
 module.exports = {
     createTables,
-    storeSearch
+    storeSearch,
+    getSearches
 }
 
