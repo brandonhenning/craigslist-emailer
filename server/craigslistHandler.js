@@ -1,63 +1,4 @@
-require('dotenv').config()
-const express = require('express')
-const cors = require('cors')
-const morgan = require('morgan')
-const fetch = require('node-fetch')
 const cheerio = require('cheerio')
-const port = process.env.PORT || 5000
-const mailHandler = require('./mailHandler')
-const db = require('./database/saveToDatabase')
-const craigslist = require('./craigslistHandler')
-
-const app = express()
-app.use(cors())
-app.use(morgan('tiny'))
-
-db.createTables()
-
-
-
-app.get('/search/:location/:searchTerm', (request, response) => {
-    (checkRequestForErrors(request))
-    const { location, searchTerm } = request.params
-    const url = `https://${location}.craigslist.org/search/sss?query=${searchTerm}`
-
-    fetch(url)
-        .then(response => response.text())
-        .then(body => {
-            const results = craigslist.getResults(body)
-            if (craigslist.checkResponseForListings(results)) {
-                mailHandler.sendEmail(craigslist.formatSearchTerm(searchTerm), craigslist.formatResultsToHTML(results))
-                db.storeSearch(location, searchTerm, craigslist.setSearchDate(), 'test@email.net')
-                response.json({
-                    message: 'Email successfuly sent!'
-                })
-            } else {
-                response.json({
-                    message: 'No listings found, please try again.'
-                })
-            }
-        })
-})
-
-// Ideal setup river of functions would look like this ::::::: 
-// scrapeCraigslist (body)
-// .then(sendEmail)
-// .then(saveToDatabase)
-// .then(sendResponse)
-
-
-
-
-// function getSearchArray () {
-//     return db.getSearches()
-// }
-
-// getSearchArray()
-//     .then(data => {
-//         console.log(data)
-//     })
-
 
 function getResults (body) {
     const $ = cheerio.load(body)
@@ -130,18 +71,14 @@ function setSearchDate () {
     return Date().split(' ').slice(1, 4).join(' ')
 }
 
-
-app.use((request, response, next) => {
-    const error = new Error('not found')
-    response.status(404)
-    next(error)
-})
-
-app.use((error, request, response, next) => {
-    response.status(response.statusCode || 500)
-    response.json({
-        message: error.message
-    })
-})
-
-app.listen(port)
+module.exports = {
+    getResults,
+    formatResultsToHTML,
+    formatResultsRows,
+    pushResultsAsList,
+    checkResponseForListings,
+    formatSearchTerm,
+    checkRequestForErrors,
+    getImagesIfTheyExist,
+    setSearchDate
+}
