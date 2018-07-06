@@ -34,7 +34,6 @@ function pushResultsAsList (results, title, link, price, images, timePosted) {
 }
 
 function checkResponseForListings (results) {
-    console.log(results.length, results)
     if (results.length === 0) {
         return false
     } else return true

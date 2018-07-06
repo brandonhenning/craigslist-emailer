@@ -13,7 +13,7 @@ function sendEmail (mailHTML) {
     
         let mailOptions = {
             from: '<craigslistbot>',
-            to: 'prescott.henning@gmail.com',
+            to: 'black.reed.c@gmail.com',
             subject: 'Craigslist Emailer',
             html: mailHTML
         }
