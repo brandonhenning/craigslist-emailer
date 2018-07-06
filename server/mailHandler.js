@@ -10,20 +10,16 @@ function sendEmail (mailHTML, emailAddress) {
                 pass: process.env.EMAIL_PASS
             }
         })
-    
         let mailOptions = {
             from: '<craigslistbot>',
             to: emailAddress,
             subject: 'Craigslist Emailer',
             html: mailHTML
         }
-    
         transporter.sendMail(mailOptions, (error, info) => {
             if (error) {
                 return console.log(error)
             }
-            console.log('Message sent', info, info.messageId)
-            console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info))
         })
     })
 }
