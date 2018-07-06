@@ -35,7 +35,7 @@ export default {
     methods: {
         sendEmail (city, searchTerm, email) {
             this.emails.push(email)
-            const URL = `http://localhost:5000/search/${city}/${searchTerm}`
+            const URL = `http://localhost:5000/search/${city}/${searchTerm}/${email}`
             fetch(URL)
                 .then(response => response.json())
                 .then(result => {

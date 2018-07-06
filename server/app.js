@@ -16,13 +16,12 @@ db.createTables()
 
 
 
-app.get('/search/:location/:searchTerm', (request, response) => {
+app.get('/search/:location/:searchTerm/:email', (request, response) => {
     scrapeCraigslist(request)
-        .then(results => sendEmail(results))
+        .then(results => sendEmail(results, request.params))
         .then((results) => saveToDatabase(results, request.params))
         .then(results => sendResponse(results, response))
 })
-
 
 
 function scrapeCraigslist (request) {
@@ -33,14 +32,13 @@ function scrapeCraigslist (request) {
             return craigslist.getResults(body)})
 }
 
-
-function sendEmail (results) {
-    mailHandler.sendEmail(craigslist.formatResultsToHTML(results))
+function sendEmail (results, searchObject) {
+    mailHandler.sendEmail(craigslist.formatResultsToHTML(results), searchObject.email)
     return results
 }
 
 function saveToDatabase (results, searchObject) {
-    db.storeSearch(searchObject.location, searchObject.searchTerm, craigslist.setSearchDate(), 'test@email.net')
+    db.storeSearch(searchObject.location, searchObject.searchTerm, craigslist.setSearchDate(), searchObject.email, false)
     return results
 }
 
@@ -52,14 +50,10 @@ function sendResponse (results, response) {
     } return results
 }
 
-// function getSearchArray () {
-//     return db.getSearches()
-// }
+async function getSearchArray () {
+    return await db.getSearches()
+}
 
-// getSearchArray()
-//     .then(data => {
-//         console.log(data)
-//     })
 
 app.use((request, response, next) => {
     const error = new Error('not found')
@@ -75,3 +69,6 @@ app.use((error, request, response, next) => {
 })
 
 app.listen(port)
+
+
+// const searchLoop = setInterval (getSearchArray, 5000)
