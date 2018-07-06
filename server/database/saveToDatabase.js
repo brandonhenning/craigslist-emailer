@@ -9,10 +9,9 @@ function storeSearch (location, searchTerm, searchDate, email, wantstoBeEmailed)
     return pool.query(`INSERT INTO searches(location, searchTerm, searchDate, email, wantsToBeEmailed) VALUES ('${location}', '${searchTerm}', '${searchDate}', '${email}', '${wantstoBeEmailed}');`)
 }
 
-function getSearches () {
-    return pool.query(`SELECT email FROM searches ;`)
-    .then(response => {
-        console.log(response.rows)    
+function getEmailList () {
+    return pool.query(`SELECT email, searchTerm, location FROM searches WHERE wantstobeemailed = TRUE;`)
+    .then(response => { 
         return response.rows
     })
 }
@@ -20,6 +19,6 @@ function getSearches () {
 module.exports = {
     createTables,
     storeSearch,
-    getSearches
+    getEmailList
 }
 

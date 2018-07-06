@@ -38,7 +38,7 @@ function sendEmail (results, searchObject) {
 }
 
 function saveToDatabase (results, searchObject) {
-    db.storeSearch(searchObject.location, searchObject.searchTerm, craigslist.setSearchDate(), searchObject.email, false)
+    db.storeSearch(searchObject.location, searchObject.searchTerm, craigslist.setSearchDate(), searchObject.email, true)
     return results
 }
 
@@ -50,8 +50,21 @@ function sendResponse (results, response) {
     } return results
 }
 
-async function getSearchArray () {
-    return await db.getSearches()
+async function getEmailListAndSendEmail () {
+    return await db.getEmailList()
+        .then(array => {
+            return array.forEach(search => {
+                rescrapeCraigslistAndSendEmail(search)})})
+}
+
+
+function rescrapeCraigslistAndSendEmail (searchObject) {
+    const url = `https://${searchObject.location}.craigslist.org/search/sss?query=${searchObject.searchterm}`
+    return fetch(url)
+        .then(response => response.text())
+        .then(body => {
+            return craigslist.getResults(body)})
+        .then(results => { sendEmail(results, searchObject)})
 }
 
 
@@ -71,4 +84,4 @@ app.use((error, request, response, next) => {
 app.listen(port)
 
 
-// const searchLoop = setInterval (getSearchArray, 5000)
+const emailLoop = setInterval (getEmailListAndSendEmail, 30000)
