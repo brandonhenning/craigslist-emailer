@@ -1,7 +1,7 @@
 const nodemailer = require('nodemailer')
 
 
-function sendEmail (mailSubject, mailHTML) {
+function sendEmail (mailHTML) {
     nodemailer.createTestAccount((error, account) => {
         let transporter = nodemailer.createTransport({
             service: 'gmail',
@@ -13,8 +13,8 @@ function sendEmail (mailSubject, mailHTML) {
     
         let mailOptions = {
             from: '<craigslistbot>',
-            to: 'prescottbph@gmail.com',
-            subject: mailSubject,
+            to: 'prescott.henning@gmail.com',
+            subject: 'Craigslist Emailer',
             html: mailHTML
         }
     

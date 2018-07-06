@@ -3,7 +3,6 @@ const express = require('express')
 const cors = require('cors')
 const morgan = require('morgan')
 const fetch = require('node-fetch')
-const cheerio = require('cheerio')
 const port = process.env.PORT || 5000
 const mailHandler = require('./mailHandler')
 const db = require('./database/saveToDatabase')
@@ -18,36 +17,40 @@ db.createTables()
 
 
 app.get('/search/:location/:searchTerm', (request, response) => {
-    (checkRequestForErrors(request))
-    const { location, searchTerm } = request.params
-    const url = `https://${location}.craigslist.org/search/sss?query=${searchTerm}`
-
-    fetch(url)
-        .then(response => response.text())
-        .then(body => {
-            const results = craigslist.getResults(body)
-            if (craigslist.checkResponseForListings(results)) {
-                mailHandler.sendEmail(craigslist.formatSearchTerm(searchTerm), craigslist.formatResultsToHTML(results))
-                db.storeSearch(location, searchTerm, craigslist.setSearchDate(), 'test@email.net')
-                response.json({
-                    message: 'Email successfuly sent!'
-                })
-            } else {
-                response.json({
-                    message: 'No listings found, please try again.'
-                })
-            }
-        })
+    scrapeCraigslist(request)
+        .then(results => sendEmail(results))
+        .then((results) => saveToDatabase(results, request.params))
+        .then(results => sendResponse(results, response))
 })
 
-// Ideal setup river of functions would look like this ::::::: 
-// scrapeCraigslist (body)
-// .then(sendEmail)
-// .then(saveToDatabase)
-// .then(sendResponse)
 
 
+function scrapeCraigslist (request) {
+    const url = craigslist.getSearchParameters(request)
+    return fetch(url)
+        .then(response => response.text())
+        .then(body => {
+            return craigslist.getResults(body)})
+}
 
+
+function sendEmail (results) {
+    mailHandler.sendEmail(craigslist.formatResultsToHTML(results))
+    return results
+}
+
+function saveToDatabase (results, searchObject) {
+    db.storeSearch(searchObject.location, searchObject.searchTerm, craigslist.setSearchDate(), 'test@email.net')
+    return results
+}
+
+function sendResponse (results, response) {
+    if (craigslist.checkResponseForListings(results)) {
+        response.json({ message: 'Email successfully Sent!'})
+    } else {
+        response.json({ message: 'No results found, please try again' })
+    } return results
+}
 
 // function getSearchArray () {
 //     return db.getSearches()
@@ -57,79 +60,6 @@ app.get('/search/:location/:searchTerm', (request, response) => {
 //     .then(data => {
 //         console.log(data)
 //     })
-
-
-function getResults (body) {
-    const $ = cheerio.load(body)
-    const rows = $('li.result-row')
-    const results = []
-    formatResultsRows(results, $, rows)
-    return results
-}
-
-function formatResultsRows (results, $, rows) {
-    rows.each((index, element) => {
-        const result = $(element)
-        const link = result.find('.result-title').attr('href')
-        const title = result.find('.result-title').text()
-        const price = $(result.find('.result-price').get(0)).text()
-        const imageData = result.find('a.result-image').attr('data-ids')
-        const timePosted = result.find('.result-date').text()
-        const images = getImagesIfTheyExist(imageData)
-        pushResultsAsList(results, title, link, price, images, timePosted)
-    })
-}
-
-function pushResultsAsList (results, title, link, price, images, timePosted) {
-    results.push({ title, link, price, images,timePosted })
-}
-
-function checkResponseForListings (results) {
-    if (results.length === 0) {
-        return false
-    } else return true
-}
-
-function formatSearchTerm (searchTerm) {
-    let subject = searchTerm.toLowerCase()
-    subject[0].toUpperCase()
-    return subject
-}
-
-function checkRequestForErrors (request) {
-    if (request.params.location && request.params.searchTerm) {
-        return request
-    }
-    else {
-        return 'Error, request parameters not formatted correctly, please adjust and resubmit.'
-    }
-} 
-
-function formatResultsToHTML (results) {
-    let bodyOfHTML = '<h1>Listings</h1><br>'
-    results.forEach(listing => {
-        bodyOfHTML += `<h3>${listing.title}</h3>`
-        bodyOfHTML += `<img src="${listing.images[0]}"></img>`
-        bodyOfHTML += `<h3>${listing.price}</h3>`
-        bodyOfHTML += `<a href>${listing.link}</a>`
-    })
-    return bodyOfHTML
-}
-
-
-function getImagesIfTheyExist (imageData) {
-    if (imageData) {
-        const parts = imageData.split(',')
-        images = parts.map((id) => {
-            return `https://images.craigslist.org/${id.split(':')[1]}_300x300.jpg`
-        })
-    } return images
-}
-
-function setSearchDate () {
-    return Date().split(' ').slice(1, 4).join(' ')
-}
-
 
 app.use((request, response, next) => {
     const error = new Error('not found')

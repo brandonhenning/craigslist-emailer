@@ -1,5 +1,13 @@
 const cheerio = require('cheerio')
 
+
+function getSearchParameters (request) {
+    const { location, searchTerm } = request.params
+    const url = `https://${location}.craigslist.org/search/sss?query=${searchTerm}`
+    return url
+}
+
+
 function getResults (body) {
     const $ = cheerio.load(body)
     const rows = $('li.result-row')
@@ -22,19 +30,14 @@ function formatResultsRows (results, $, rows) {
 }
 
 function pushResultsAsList (results, title, link, price, images, timePosted) {
-    results.push({ title, link, price, images,timePosted })
+    results.push({ title, link, price, images, timePosted })
 }
 
 function checkResponseForListings (results) {
+    console.log(results.length, results)
     if (results.length === 0) {
         return false
     } else return true
-}
-
-function formatSearchTerm (searchTerm) {
-    let subject = searchTerm.toLowerCase()
-    subject[0].toUpperCase()
-    return subject
 }
 
 function checkRequestForErrors (request) {
@@ -77,8 +80,8 @@ module.exports = {
     formatResultsRows,
     pushResultsAsList,
     checkResponseForListings,
-    formatSearchTerm,
     checkRequestForErrors,
     getImagesIfTheyExist,
-    setSearchDate
+    setSearchDate,
+    getSearchParameters
 }
